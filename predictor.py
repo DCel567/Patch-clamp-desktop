@@ -26,23 +26,7 @@ from sklearn.metrics import confusion_matrix, roc_auc_score, classification_repo
 import math
 
 
-batch_size = 256
 
-Dname = 'intervals/0.0001_6.5.csv'
-
-df30 = pd.read_csv(Dname, header=None)
-dataset = df30.values
-dataset = dataset.astype('float64')
-timep = dataset[:, 0]
-maxer = np.amax(dataset[:, 2])
-print(maxer)
-maxeri = maxer.astype('int')
-maxchannels = maxeri
-idataset = dataset[:, 2]
-idataset = idataset.astype(int)
-
-scaler = MinMaxScaler(feature_range=(0, 1))
-dataset = scaler.fit_transform(dataset)
 
 
 def mcor(y_true, y_pred):
@@ -244,41 +228,61 @@ def half_smoothing(raw, pred):
     return raw
 
 
-train_size = int(len(dataset))
+def start_predicting(file_name='intervals/0.0001_6.5.csv', lenny=0, ulenny=6000):
+    batch_size = 256
 
-in_train = dataset[:, 1]
-target_train = idataset
+    Dname = file_name
 
-in_train = in_train.reshape(len(in_train), 1, 1, 1)
+    df30 = pd.read_csv(Dname, header=None)
+    dataset = df30.values
+    dataset = dataset.astype('float64')
+    timep = dataset[:, 0]
+    maxer = np.amax(dataset[:, 2])
+    print(maxer)
+    maxeri = maxer.astype('int')
+    maxchannels = maxeri
+    idataset = dataset[:, 2]
+    idataset = idataset.astype(int)
 
-loaded_model = load_model('model/my_own_deepchanel_to5_with534_val.h5', custom_objects={
-                          'mcor': mcor, 'precision': precision, 'recall': recall, 'F1Score': f1, 'auc': auc})
-
-loaded_model.summary()
-
-c = np.argmax(loaded_model.predict(in_train, batch_size=batch_size, verbose=True), axis=-1)
-
-raw_data = dataset[:, 1]
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    dataset = scaler.fit_transform(dataset)
 
 
-raw_data = smoothing(raw_data, c)
-in_train = raw_data.reshape(len(raw_data), 1, 1, 1)
-c = np.argmax(loaded_model.predict(in_train, batch_size=batch_size, verbose=True), axis=-1)
+    train_size = int(len(dataset))
 
-lenny = 0
-ulenny = 6000
+    in_train = dataset[:, 1]
+    target_train = idataset
 
-plt.figure(figsize=(30, 6))
-plt.subplot(2, 1, 1)
+    in_train = in_train.reshape(len(in_train), 1, 1, 1)
 
-plt.plot(dataset[lenny:ulenny, 1], color='blue')
-plt.ylabel('Значение тока')
-# plt.title("The raw test")
+    loaded_model = load_model('model/my_own_deepchanel_to5_with534_val.h5', custom_objects={
+                              'mcor': mcor, 'precision': precision, 'recall': recall, 'F1Score': f1, 'auc': auc})
 
-plt.subplot(2, 1, 2)
-plt.plot(c[lenny:ulenny], color='red')
+    loaded_model.summary()
 
-plt.xlabel('Временные точки')
-plt.ylabel('Открытые каналы')
-plt.legend()
-plt.show()
+    c = np.argmax(loaded_model.predict(in_train, batch_size=batch_size, verbose=True), axis=-1)
+
+    raw_data = dataset[:, 1]
+
+
+    raw_data = smoothing(raw_data, c)
+    in_train = raw_data.reshape(len(raw_data), 1, 1, 1)
+    c = np.argmax(loaded_model.predict(in_train, batch_size=batch_size, verbose=True), axis=-1)
+
+    plt.figure(figsize=(30, 6))
+    plt.subplot(2, 1, 1)
+
+    plt.plot(dataset[lenny:ulenny, 1], color='blue')
+    plt.ylabel('Значение тока')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(c[lenny:ulenny], color='red')
+
+    plt.xlabel('Временные точки')
+    plt.ylabel('Открытые каналы')
+    plt.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    start_predicting()

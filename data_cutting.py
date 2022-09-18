@@ -2,18 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from scipy.signal import filtfilt, iirnotch, cheby2
-
-
-def notch(data):
-    # Create/view notch filter
-    samp_freq = 10000  # Sample frequency (Hz)
-    notch_freq = 50.0  # Frequency to be removed from signal (Hz)
-    quality_factor = 30.0  # Quality factor
-    b_notch, a_notch = iirnotch(notch_freq, quality_factor, samp_freq)
-
-    y = filtfilt(b_notch, a_notch, data)
-    return y
+import filters as f
 
 
 def prep_data() -> (np.ndarray, np.ndarray, np.ndarray):
@@ -128,9 +117,9 @@ def save_csvs_to_dir(t, v, s):
             currvolt = v[start:stop]
             currsign = s[start:stop]
 
-            currsign = notch(currsign)
-            currsign = cheby_filter_high(currsign)
-            currsign = cheby_filter_low(currsign)
+            currsign = f.notch(currsign)
+            currsign = f.cheby_filter_high(currsign)
+            currsign = f.cheby_filter_low(currsign)
 
             csv_name = str(t[start]) + '_' + str(t[stop-1]) + '.csv'
 
@@ -140,18 +129,6 @@ def save_csvs_to_dir(t, v, s):
             df.to_csv(csv_name, index=False, header=False)
 
             start = i
-
-
-def cheby_filter_low(data):
-    b, a = cheby2(4, 40, 1000, 'low', fs=10000)
-    y = filtfilt(b, a, data)
-    return y
-
-
-def cheby_filter_high(data):
-    b, a = cheby2(4, 40, 5, 'high', fs=10000)
-    y = filtfilt(b, a, data)
-    return y
 
 
 def save_interval(start, stop, s, t):
@@ -170,25 +147,16 @@ def make_intervals(sig, volt, tim):
     """here's how to make intervals in folder"""
 
     splitted_time = split_time(volt, tim)
-    # print('time split...')
     write_bad_sectors_to_file(splitted_time)
-    # print('bad sectors written...')
 
     bad_sectors = read_bad_sectors()
-    # print('bad sectors read...')
     tim, volt, sig = get_good_time(tim, volt, sig, bad_sectors)
-    # print('good times got...')
-
-    # print('time shape:')
-    # print(tim.shape)
 
     save_csvs_to_dir(tim, volt, sig)
 
 
-if __name__ == '__main__':
+def start_cutting(first_few_points_start=0, first_few_points_stop=1000000):
     signal, voltage, time = prep_data()
-    first_few_points_start = 0
-    first_few_points_stop = 6000
 
     print('total length: ', len(voltage), '\n')
 
@@ -198,11 +166,11 @@ if __name__ == '__main__':
 
     # make_plot(time, signal, voltage, len(voltage), save=False, file_name='before.png', second_name='voltage')
 
+    make_intervals(signal, voltage, time)
 
-    # make_intervals(signal, voltage, time)
+    make_plot(time, signal, voltage, len(voltage), save=False, file_name='after02.png')
 
-    # make_plot(time, better_signal, voltage, len(voltage), save=False, file_name='after02.png')
-
-    save_interval(first_few_points_start, first_few_points_stop, signal, time)
+    # save_interval(first_few_points_start, first_few_points_stop, signal, time)
 
     # make_plot(time, signal, better_signal, len(signal), first_name='signal', second_name='better signal', save=True, file_name='filter_compare.png')
+
