@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 import filters as f
 
 
-def prep_data() -> (np.ndarray, np.ndarray, np.ndarray):
+def prep_data(source_file='test_data.csv') -> (np.ndarray, np.ndarray, np.ndarray):
     data_amount = 5526017
 
-    df = pd.read_csv("test_data.csv", header=None)
+    df = pd.read_csv(source_file, header=None)
     df = df.values.astype('float64')
     signal = df[:, 1]
     voltage = df[:, 2]
-    time_steps = np.array([i/10000 for i in range(1, data_amount)])
+    time_steps = np.array([i/10000 for i in range(1, signal.shape[0]+1)])
     print(signal.shape, time_steps.shape)
 
     return signal, voltage, time_steps
@@ -155,8 +155,8 @@ def make_intervals(sig, volt, tim):
     save_csvs_to_dir(tim, volt, sig)
 
 
-def start_cutting(first_few_points_start=0, first_few_points_stop=1000000):
-    signal, voltage, time = prep_data()
+def start_cutting(source_file, first_few_points_start=0, first_few_points_stop=1000000):
+    signal, voltage, time = prep_data(source_file)
 
     print('total length: ', len(voltage), '\n')
 
@@ -173,4 +173,5 @@ def start_cutting(first_few_points_start=0, first_few_points_stop=1000000):
     # save_interval(first_few_points_start, first_few_points_stop, signal, time)
 
     # make_plot(time, signal, better_signal, len(signal), first_name='signal', second_name='better signal', save=True, file_name='filter_compare.png')
+
 
