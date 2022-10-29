@@ -5,12 +5,25 @@ import tkinter as t
 source_file = 'test_data.csv'
 
 
-def apply_source_file():
-	source = text_source_file.get()
-	global source_file
+def draw_top_frame():
+	def apply_source_file():
+		source = text_source_file.get()
+		global source_file
 
-	if source != '':
-		source_file = source
+		if source != '':
+			source_file = source
+
+	topFrame = t.Frame(window, padx=10, pady=10)
+	label_source_file = t.Label(topFrame, text='Введите полный путь к файлу: ')
+	text_source_file = t.StringVar()
+	entry_source_file = t.Entry(topFrame, textvariable=text_source_file, width=40)
+	button_save_source_file_name = t.Button(topFrame, text='Использовать этот файл', command=apply_source_file)
+
+	topFrame.pack()
+	label_source_file.pack(side=t.LEFT)
+	entry_source_file.pack(side=t.LEFT)
+	button_save_source_file_name.pack(side=t.LEFT)
+
 
 
 def cut_intervals():
@@ -61,22 +74,22 @@ if __name__ == "__main__":
 	window.title('Patch-clamp desktop')
 	window.geometry('600x400')
 
-	topFrame = t.Frame(window, padx=10, pady=10)
+	draw_top_frame()
+
+
 	midFrame = t.Frame(window, padx=10, pady=10)
 	bottomFrame = t.Frame(window, padx=10, pady=10)
 	underBottomFrame = t.Frame(window, padx=10, pady=10)
 
-	label_source_file = t.Label(topFrame, text='Введите файл для парсинга')
-
-	label_first_intervals = t.Label(midFrame, text='Точка старта парсинга: ')
-	label_last_intervals = t.Label(midFrame, text='Последняя точка парсинга: ')
-
-	text_source_file = t.StringVar()
-	entry_source_file = t.Entry(topFrame, textvariable=text_source_file, width=40)
-	button_save_source_file_name = t.Button(topFrame, text='Использовать этот файл', command=apply_source_file)
 
 	text_first_points = t.StringVar()
 	text_last_points = t.StringVar()
+
+	label_first_intervals = t.Label(midFrame, text='Начальная точка парсинга: ')
+	label_last_intervals = t.Label(midFrame, text='Последняя точка парсинга: ')
+
+
+
 	entry_first_points = t.Entry(midFrame, textvariable=text_first_points, width=15)
 	entry_last_points = t.Entry(midFrame, textvariable=text_last_points, width=15)
 	button_cut = t.Button(midFrame, text='Разделить', command=cut_intervals)
@@ -93,14 +106,12 @@ if __name__ == "__main__":
 	entry_last_window = t.Entry(underBottomFrame, textvariable=text_last_window, width=15)
 	button_predict = t.Button(underBottomFrame, text='Рассчитать', command=predict_interval)
 
-	topFrame.pack()
+
 	midFrame.pack()
 	bottomFrame.pack()
 	underBottomFrame.pack()
 
-	label_source_file.pack(side=t.LEFT)
-	entry_source_file.pack(side=t.LEFT)
-	button_save_source_file_name.pack(side=t.LEFT)
+
 
 	label_first_intervals.pack(side=t.LEFT)
 	entry_first_points.pack(side=t.LEFT)

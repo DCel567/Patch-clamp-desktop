@@ -5,3 +5,9 @@ test_data.csv
 bad_sectors.txt
 
 1.csv
+
+dist/**
+
+build/**
+
+desktop.spec
